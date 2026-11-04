@@ -1,0 +1,21 @@
+{
+  "name": "search-checker",
+  "version": "1.0.0",
+  "description": "View any URL through Webshare.io rotating residential proxies, from any country, with screenshots, source, network and block detection.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "setup": "npx playwright install chromium",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0",
+    "playwright": "^1.55.0"
+  }
+}

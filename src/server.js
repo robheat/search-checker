@@ -298,15 +298,48 @@ server.use((err, req, res, next) => {
   res.status(status).json({ error: err.message || 'Something went wrong' });
 });
 
-const httpServer = server.listen(appConfig.port, appConfig.host, () => {
-  const shown = appConfig.host === '0.0.0.0' ? 'localhost' : appConfig.host;
-  console.log(`\n  Search Checker is running →  http://${shown}:${appConfig.port}\n`);
+const shownHost = ['0.0.0.0', '::'].includes(appConfig.host) ? 'localhost' : appConfig.host;
+const appUrl = `http://${shownHost}:${appConfig.port}`;
+const shouldOpen = process.argv.includes('--open') || process.env.OPEN_BROWSER === '1';
+
+// Open the app in the default browser (used by start.bat). Never fatal.
+function openBrowser(url) {
+  const { spawn } = require('child_process');
+  const [cmd, args] =
+    process.platform === 'win32'
+      ? ['cmd', ['/c', `start "" "${url}"`]]
+      : process.platform === 'darwin'
+        ? ['open', [url]]
+        : ['xdg-open', [url]];
+  try {
+    const child = spawn(cmd, args, { stdio: 'ignore', detached: true, windowsHide: true, windowsVerbatimArguments: true });
+    child.on('error', () => console.log(`  Open ${url} in your browser.`));
+    child.unref();
+  } catch {
+    console.log(`  Open ${url} in your browser.`);
+  }
+}
+
+const httpServer = server.listen(appConfig.port, appConfig.host, (err) => {
+  if (err) return; // Express 5 passes listen errors here too; handled below.
+  console.log(`\n  Search Checker is running →  ${appUrl}\n`);
   if (!hasCredentials()) console.log('  No Webshare credentials yet — open the app and add them in Settings.\n');
   if (appConfig.host === '0.0.0.0' && !appConfig.appPassword) {
     console.warn('  Warning: listening on all interfaces without APP_PASSWORD set.\n');
   }
+  if (shouldOpen) openBrowser(appUrl);
   // Warm up the browser so the first view is fast.
   getBrowser().catch((err) => console.error('  Could not start Chromium:', err.userMessage || err.message));
+});
+
+httpServer.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n  Port ${appConfig.port} is already in use — Search Checker (or another app) is probably already running.`);
+    console.error(`  Opening ${appUrl}. To use another port, set PORT in .env (e.g. PORT=3001).\n`);
+    if (shouldOpen) openBrowser(appUrl);
+    process.exit(2);
+  }
+  throw err;
 });
 
 async function shutdown() {

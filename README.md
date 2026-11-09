@@ -15,12 +15,23 @@ See any URL the way people in another country see it. Every view goes through a 
 
 ## Quick start
 
+### Windows: double-click `start.bat`
+
+1. Install [Node.js](https://nodejs.org) (the LTS version), if you don't have it.
+2. Double-click **`start.bat`**.
+
+On the first run it installs everything, including the Chromium browser (about 150 MB), which takes a minute or two. After that it starts straight away. Your browser opens the app automatically. Keep the black window open while you use the app, and close it to stop.
+
+The script reinstalls automatically when you pull an update that changes dependencies. If the app is already running, double-clicking again just opens it in your browser.
+
+### Any OS: command line
+
 Requires Node.js 18.17+.
 
 ```bash
 npm install
 npm run setup      # downloads Chromium for Playwright (one-time)
-npm start          # → http://127.0.0.1:3000
+npm start          # → http://127.0.0.1:3000  (add -- --open to launch the browser)
 ```
 
 Open the app. On first run it asks for your Webshare credentials. You can give either:
